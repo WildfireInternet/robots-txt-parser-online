@@ -1,0 +1,24 @@
+{
+  "name": "robots-txt-parser-online",
+  "version": "0.0.1",
+  "description": "Robots.txt parser online",
+  "main": "main.js",
+  "scripts": {
+    "start": "node $npm_package_main",
+    "watch": "nodemon $npm_package_main",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Andrew Stilliard <andrew.stilliard@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "1.15.0",
+    "express": "4.13.4",
+    "readable-string": "1.0.1",
+    "request": "2.69.0",
+    "robots-txt-guard": "0.1.0",
+    "robots-txt-parse": "0.0.4"
+  },
+  "devDependencies": {
+    "nodemon": "1.9.1"
+  }
+}

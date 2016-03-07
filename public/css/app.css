@@ -1,0 +1,52 @@
+
+
+/* simpel centered design */
+body {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1em;
+}
+
+/* fill available screen, with mnor gap to side */
+textarea {
+    width: 95%;
+}
+
+/* treat any code blocks as inline blocks to try to hold them together instead of wrapping */
+code {
+    display: inline-block;
+}
+
+/* any errors */
+#error-msg {
+    padding: 0.5em 1em;
+    background: red;
+    color: #FFF;
+    transition: all 0.3s;
+    max-height: 100px; /* overly large to facilitate the effect */
+}
+#error-msg:empty {
+    visibility: hidden;
+    max-height: 0;
+    padding: 0;
+}
+
+/* results */
+#results {
+    list-style: none;
+    padding: 0;
+}
+#results li {
+    padding: 0.2em 1em;
+}
+/* result states */
+.is-allowed,
+.is-disallowed {
+    text-transform: capitalize;
+}
+.is-allowed {
+    color: green;
+}
+.is-disallowed {
+    color: red;
+}
