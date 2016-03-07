@@ -6,7 +6,7 @@ const express = require('express'),
     robotsGuard = require('robots-txt-guard'),
     ReadableString = require('readable-string'),
     request = require('request'),
-    port = 3000,
+    port = process.env.PORT || 3000,
     googleRecaptchaSecret = process.env.GOOGLERECAPTCHASECRET;
 
 if ( ! googleRecaptchaSecret) {
