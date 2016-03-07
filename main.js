@@ -87,6 +87,10 @@ app.post('/', (req, res) => {
             // loop urls, checking if allowed
             urls.forEach(function (url) {
                 if (url) {
+                    // make sure path is correct
+                    if ( ! url.startsWith('/') || ! url.startsWith('http')) {
+                        url = '/' + url;
+                    }
                     results[url] = parsedRobotsRules.isAllowed(ua, url)
                 }
             });
