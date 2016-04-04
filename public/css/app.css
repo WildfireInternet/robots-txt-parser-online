@@ -17,6 +17,12 @@ code {
     display: inline-block;
 }
 
+/* header logo image */
+.header-logo {
+    float: left;
+    padding-right: 1em;
+}
+
 /* any errors */
 #error-msg {
     padding: 0.5em 1em;
