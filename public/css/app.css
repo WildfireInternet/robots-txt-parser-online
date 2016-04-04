@@ -21,6 +21,14 @@ code {
 .header-logo {
     float: left;
     padding-right: 1em;
+    -webkit-transition: -webkit-transform .8s ease-in-out;
+    transition: transform .8s ease-in-out;
+    -webkit-user-drag: none;
+    user-drag: none;
+}
+.header-logo:active {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
 }
 
 /* any errors */
