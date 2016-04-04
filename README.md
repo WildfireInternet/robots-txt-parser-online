@@ -1,5 +1,5 @@
 
-![Dave](./public/images/robots-txt-checker.png) Robots.txt Checker / Parser Online
+![RTC](./public/images/robots-txt-checker.png) Robots.txt Checker / Parser Online
 ================================
 
 To run:
