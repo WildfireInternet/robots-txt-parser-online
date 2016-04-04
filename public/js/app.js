@@ -7,9 +7,9 @@ jQuery(function ($) {
         $urls = $('#urls'),
         $ua = $('#ua'),
         // get template for results
-        template = $('#result-url').html()
+        template = $('#result-url').html(),
         // container for any errors
-        $errors = $('#error-msg')
+        $errors = $('#error-msg'),
         // container for results
         $results = $('#results');
 
@@ -58,4 +58,4 @@ jQuery(function ($) {
 
         });
     });
-})
+});
