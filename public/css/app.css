@@ -39,12 +39,9 @@ code {
 
 /* results */
 #results {
-    list-style: none;
-    padding: 0;
+    width: 100%;
 }
-#results li {
-    padding: 0.2em 1em;
-}
+
 /* result states */
 .is-allowed,
 .is-disallowed {

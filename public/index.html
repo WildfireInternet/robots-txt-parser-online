@@ -51,7 +51,7 @@ Disallow: /something-*
 
     </form>
 
-    <ul id="results"></ul>
+    <table id="results" class="pure-table pure-table-bordered"></table>
 
     <hr>
 
@@ -68,7 +68,10 @@ Disallow: /something-*
     <script src="/js/app.js"></script>
 
     <script type="text/template" id="result-url">
-        <li><strong class="is-{state}">{state}</strong>: {url}</li>
+        <tr>
+            <td><strong class="is-{state}">{state}</strong></td>
+            <td>{url}</td>
+        </tr>
     </script>
 
     <script>
