@@ -4,15 +4,15 @@
   "description": "Robots.txt parser online",
   "main": "main.js",
   "scripts": {
-    "start": "node $npm_package_main",
-    "watch": "nodemon $npm_package_main",
+    "start": "node main.js",
+    "watch": "nodemon main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Andrew Stilliard <andrew.stilliard@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "body-parser": "1.15.0",
-    "express": "4.13.4",
+    "express": "4.18.2",
     "readable-string": "1.0.1",
     "request": "2.69.0",
     "robots-txt-guard": "0.1.0",
