@@ -15,7 +15,7 @@
     "express": "4.18.2",
     "readable-string": "1.0.1",
     "request": "2.88.2",
-    "robots-txt-guard": "0.1.0",
+    "robots-txt-guard": "1.0.2",
     "robots-txt-parse": "0.0.4"
   },
   "devDependencies": {
