@@ -5,7 +5,7 @@ const express = require('express'),
     robotsParser = require('robots-txt-parse'),
     robotsGuard = require('robots-txt-guard'),
     ReadableString = require('readable-string'),
-    request = require('request'),
+    fetch = require('node-fetch'),
     port = process.env.PORT || 3000,
     googleRecaptchaSecret = process.env.GOOGLERECAPTCHASECRET;
 
@@ -19,7 +19,7 @@ let app = express();
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.post('/', (req, res) => {
+app.post('/', async (req, res) => {
 
     // make sure all rquired data is entered
     if ( ! req.body.rules) {
@@ -37,24 +37,18 @@ app.post('/', (req, res) => {
     console.log(req.body);
 
     // verify google recaptcha
-    request.post('https://www.google.com/recaptcha/api/siteverify', {
-        form: {
-            secret: googleRecaptchaSecret,
-            response: req.body['g-recaptcha-response'],
-            remoteip: req.ip
-        }
-    }, function (err, httpResponse, body) {
-
-        // check for http errors
-        if (err) {
-            console.log('google recaptcha HTTP error:', err);
-            return res.json({
-                error: "Unkown HTTP error"
-            });
-        }
+    try {
+        const params = new URLSearchParams();
+        params.append('secret', googleRecaptchaSecret);
+        params.append('response', req.body['g-recaptcha-response']);
+        params.append('remoteip', req.ip);
+        const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+            method: 'POST',
+            body: params,
+        });
 
         // parse response from google
-        body = JSON.parse(body);
+        var body = await response.json();
 
         if ( ! body.success) {
             console.log('google recaptcha result error:', body);
@@ -102,7 +96,12 @@ app.post('/', (req, res) => {
 
         });
 
-    });
+    } catch (err) {
+        console.log('google recaptcha HTTP error:', err);
+        return res.json({
+            error: "Unkown HTTP error"
+        });
+    }
 
 });
 
