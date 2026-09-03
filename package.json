@@ -11,8 +11,8 @@
   "author": "Andrew Stilliard <andrew.stilliard@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "1.20.6",
-    "express": "4.22.2",
+    "body-parser": "2.3.0",
+    "express": "5.2.1",
     "node-fetch": "2.6.9",
     "readable-string": "1.0.1",
     "robots-txt-guard": "1.0.2",
