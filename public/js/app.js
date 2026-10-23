@@ -1,4 +1,3 @@
-
 jQuery(function ($) {
 
     // gather inputs for use later
@@ -13,49 +12,61 @@ jQuery(function ($) {
         // container for results
         $results = $('#results');
 
+    // check each url against the rules, returns an object of url => isAllowed
+    function check(rules, urls, ua) {
+        var results = {},
+            robots;
+
+        // fallback if no useragent given
+        if ( ! rules.match(/user-?agent:/i)) {
+            rules = "User-agent: *\r\n" + rules;
+        }
+
+        robots = RobotsTxt.guard(RobotsTxt.parse(rules));
+
+        // loop urls, checking if allowed
+        urls.split(/\r?\n/).forEach(function (url) {
+            if (url) {
+                // make sure path is correct
+                if ( ! url.startsWith('/') && ! url.startsWith('http')) {
+                    url = '/' + url;
+                }
+                results[url] = robots.isAllowed(ua, url);
+            }
+        });
+
+        return results;
+    }
+
     // on submit
     $form.submit(function (e) {
 
         var results = [];
 
-        // make sure google has loaded the re-captcha
-        if ( ! window.grecaptcha) {
-            console.log('google re-captcha not yet loaded');
-            return ;
-        }
-
         e.preventDefault(); // prevent default submit action
 
         // reset any previous errors and results
         $errors.html('');
-        $errors.html('');
+        $results.html('');
 
-        // submit form data
-        $.post('/', {
-            rules: $rules.val(),
-            urls: $urls.val(),
-            ua: $ua.val(),
-            'g-recaptcha-response': grecaptcha.getResponse() // get element live
-        }, function (data) {
+        // make sure all required data is entered
+        if ( ! $rules.val()) {
+            $errors.html("Please supply robots.txt rules");
+            return ;
+        }
 
-            // reset google re-captcha
-            grecaptcha.reset();
+        if ( ! $urls.val()) {
+            $errors.html("Please supply example urls");
+            return ;
+        }
 
-            // check for error
-            if (data.error) {
-                $errors.html(data.error);
-                return ;
-            }
-
-            // loop in results
-            $.each(data.results, function (url, isAllowed) {
-                var state = isAllowed ? 'allowed' : 'disallowed';
-                results.push(template.replace(/\{state\}/g, state).replace(/\{url\}/g, url));
-            });
-
-            // show results
-            $results.html(results.join(''));
-
+        // loop in results
+        $.each(check($rules.val(), $urls.val(), $ua.val() || '*'), function (url, isAllowed) {
+            var state = isAllowed ? 'allowed' : 'disallowed';
+            results.push(template.replace(/\{state\}/g, state).replace(/\{url\}/g, url));
         });
+
+        // show results
+        $results.html(results.join(''));
     });
 });
