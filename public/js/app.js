@@ -50,7 +50,7 @@ jQuery(function ($) {
     }
 
     // on submit
-    $form.submit(function (e) {
+    $form.on('submit', function (e) {
 
         var results = [];
 
