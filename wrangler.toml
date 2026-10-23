@@ -1,0 +1,4 @@
+# Cloudflare Pages config - the site is fully static, served straight from ./public
+name = "robots-txt-checker"
+pages_build_output_dir = "./public"
+compatibility_date = "2026-10-01"
