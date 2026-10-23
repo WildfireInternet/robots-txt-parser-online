@@ -112,7 +112,7 @@
 
     // --- patterns (robots-txt-guard/lib/patterns.js) ---
 
-    // translates a robots.txt glob patterns to regexes
+    // translates robots.txt glob patterns to regexes
     function escapeRegExp(regexString) {
         return regexString
             .replace(/[*/\-[\]{}()+?.,\\^$|#]/g, '\\$&');
