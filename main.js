@@ -11,10 +11,13 @@ const express = require('express'),
 
 if ( ! googleRecaptchaSecret) {
     console.log('Please specify google re-captcha secret, https://www.google.com/recaptcha')
-    return ;
+    process.exit(1);
 }
 
 let app = express();
+
+// trust the first reverse proxy (e.g. nginx in front of docker) so req.ip is the real client ip
+app.set('trust proxy', 1);
 
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.urlencoded({ extended: false }));
