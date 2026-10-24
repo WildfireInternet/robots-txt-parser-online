@@ -12,18 +12,13 @@ python3 -m http.server -d public 3000
 
 Then visit http://localhost:3000
 
-## Deploying to Cloudflare Pages
+## Deploying to Cloudflare
 
-Either connect the GitHub repo in the Cloudflare dashboard (Workers & Pages → Create → Pages → Connect to Git) with:
+It's deployed as a Cloudflare Worker serving the static files in `public`, connected to the GitHub repo in the dashboard (Workers & Pages → Create application → Continue with GitHub) with:
 
-- Framework preset: None
 - Build command: *(leave empty)*
-- Build output directory: `public`
+- Deploy command: `npx wrangler deploy`
 
-Or deploy from your machine with Wrangler (uses `wrangler.toml`):
+Pushes to `master` go live, and PRs get preview URLs.
 
-```bash
-npx wrangler pages deploy
-```
-
-Or visit this live @ [robots-txt-checker.wildfireinternet.co.uk](https://robots-txt-checker.wildfireinternet.co.uk/)
+Visit it live @ [robots-txt-checker.wildfireinternet.co.uk](https://robots-txt-checker.wildfireinternet.co.uk/)
