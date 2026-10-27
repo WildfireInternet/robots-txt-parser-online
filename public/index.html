@@ -67,12 +67,13 @@ Disallow: /something-*"></textarea>
                     </div>
                     <input class="input mono" type="text" name="ua" id="ua" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="*">
                     <p class="hint" id="matched-group"></p>
+                    <a class="button" href="#results-section">View results <span aria-hidden="true">↓</span></a>
                 </div>
             </div>
 
         </form>
 
-        <section class="results" aria-live="polite">
+        <section class="results" id="results-section" aria-live="polite">
             <div class="results-head">
                 <h2>Results</h2>
                 <span class="results-count" id="blocked-count"></span>

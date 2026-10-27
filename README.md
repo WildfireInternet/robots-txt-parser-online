@@ -7,12 +7,12 @@ A fully static site: robots.txt rules are parsed and checked in the browser, so 
 To run locally, serve the `public` directory with any static file server, e.g.:
 
 ```bash
-python3 -m http.server -d public 3000
+make serve   # python3 -m http.server -d public 3000, use PORT=8080 to change port
 ```
 
 Then visit http://localhost:3000
 
-Run the parser tests with `node --test` (Node 18+, no dependencies).
+Run the parser tests with `make test` (`node --test`, Node 18+, no dependencies).
 
 ## Deploying to Cloudflare
 

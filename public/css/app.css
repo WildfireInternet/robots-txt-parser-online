@@ -39,8 +39,37 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
 a {
     color: inherit;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+    padding: 8px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    background: var(--surface);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: border-color .15s, background .15s;
+}
+.button:hover {
+    border-color: var(--muted);
+}
+.button:focus-visible {
+    outline: none;
+    border-color: var(--focus);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, .15);
 }
 
 code,
@@ -278,6 +307,7 @@ textarea.input {
 
 /* results */
 .results {
+    scroll-margin-top: 24px;
     margin: 56px 0 64px;
     background: var(--surface);
     border: 1px solid var(--border);
