@@ -1,6 +1,6 @@
 
-![RTC](./public/images/robots-txt-checker.png) Robots.txt Checker / Parser Online
-================================
+Robots.txt Checker / Parser Online
+==================================
 
 A fully static site: robots.txt rules are parsed and checked in the browser, so there's no server to run.
 
@@ -11,6 +11,8 @@ python3 -m http.server -d public 3000
 ```
 
 Then visit http://localhost:3000
+
+Run the parser tests with `node --test` (Node 18+, no dependencies).
 
 ## Deploying to Cloudflare
 
