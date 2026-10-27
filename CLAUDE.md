@@ -11,5 +11,5 @@ Static site (no build step) at `public/`, live at robots-txt-checker.wildfireint
 Use `playwright-cli` (on PATH) against a local server (`python3 -m http.server -d public 3000`):
 
 - Always pass a named session, e.g. `playwright-cli -s=rtc open http://localhost:3000/`; the default session may belong to another project.
-- `screenshot --filename=...` only writes inside the directory the session was opened from, so run it from the directory where you want the files.
+- In practice `screenshot --filename=...` has only been able to write inside the directory the session was opened from, so open and run it from where you want the files.
 - `eval "() => ..."` is handy for setting inputs (set `.value` and dispatch an `input` event) and reading results.
