@@ -336,7 +336,7 @@ textarea.input {
 }
 .result {
     display: grid;
-    grid-template-columns: 116px minmax(0, 1fr) auto;
+    grid-template-columns: 116px minmax(0, 1fr) fit-content(50%);
     align-items: center;
     gap: 16px;
     padding: 12px 20px;
@@ -352,7 +352,8 @@ textarea.input {
     color: var(--faint);
     font-size: 14px;
     text-align: right;
-    white-space: pre;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 .results-empty {
     padding: 20px;

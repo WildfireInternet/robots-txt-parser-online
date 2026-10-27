@@ -26,13 +26,20 @@ jQuery(function ($) {
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
-    // check each url against the rules, returns a list of { url, allowed, group, rule }
-    function check(rules, urls, ua) {
-        var results = [],
-            robots;
+    function makeRobots(rules) {
+        var config = RobotsTxt.parse(rules);
 
         // fallback if no useragent given, rules without a group are treated as `User-agent: *`
-        robots = RobotsTxt.guard(RobotsTxt.parse(rules, RobotsTxt.parse(rules).groups.length ? null : '*'));
+        if ( ! config.groups.length) {
+            config = RobotsTxt.parse(rules, '*');
+        }
+
+        return RobotsTxt.guard(config);
+    }
+
+    // check each url against the rules, returns a list of { url, allowed, group, rule }
+    function check(robots, urls, ua) {
+        var results = [];
 
         // loop urls, checking if allowed
         urls.split(/\r?\n/).forEach(function (url) {
@@ -139,10 +146,11 @@ jQuery(function ($) {
             return;
         }
 
-        // matched group only depends on the user-agent, so check it with any path
-        $matchedGroup.html(describeGroup(check(rules, '/', ua)[0].group));
+        var robots = makeRobots(rules),
+            results = check(robots, urls, ua);
 
-        var results = check(rules, urls, ua);
+        // matched group only depends on the user-agent, so check it with any path
+        $matchedGroup.html(describeGroup(robots.explain(ua, '/').group));
 
         results.forEach(function (result) {
             var state = result.allowed ? 'allowed' : 'disallowed';
