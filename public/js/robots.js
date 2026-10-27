@@ -1,5 +1,7 @@
 /*!
  * Browser build of robots-txt-parse 0.0.4 and robots-txt-guard 1.0.2 (parse + isAllowed only)
+ * Extended for this app: line numbers, an optional default user-agent group, and explain(),
+ * so don't replace it with a fresh upstream copy.
  * https://github.com/Woorank/robots-txt-parse
  * https://github.com/Woorank/robots-txt-guard
  *
@@ -64,7 +66,8 @@
         }
     }
 
-    function parse(content) {
+    // defaultAgent: if given, rules before any User-agent line go into an implicit group for that agent
+    function parse(content, defaultAgent) {
         var result = {
             groups: [],
             extensions: []
@@ -73,9 +76,10 @@
         var prevToken    = null,
             currentGroup = null;
 
-        content.split(/\r?\n/).forEach(function (line) {
+        content.split(/\r?\n/).forEach(function (line, index) {
             var token = parseLine(line);
             if ( ! token) return;
+            token.line = index + 1;
 
             switch (token.type) {
                 case START_GROUP:
@@ -86,13 +90,24 @@
                         };
                         result.groups.push(currentGroup);
                     }
-                    currentGroup.agents.push(token.agent);
+                    currentGroup.agents.push({
+                        agent: token.agent,
+                        line : token.line
+                    });
                     break;
                 case GROUP_MEMBER:
+                    if ( ! currentGroup && defaultAgent) {
+                        currentGroup = {
+                            agents  : [{ agent: defaultAgent, line: null }],
+                            rules   : []
+                        };
+                        result.groups.push(currentGroup);
+                    }
                     if (currentGroup) {
                         currentGroup.rules.push({
                             rule: token.rule,
-                            path: token.path
+                            path: token.path,
+                            line: token.line
                         });
                     }
                     break;
@@ -196,30 +211,35 @@
             // flatten agents
             const allowByPath = new Map();
 
-            for (const { rule, path } of group.rules) {
+            for (const { rule, path, line } of group.rules) {
                 const normalizedRule = rule.toLowerCase();
                 if (path && (normalizedRule === 'allow' || normalizedRule === 'disallow')) {
                     const repeatedPath = allowByPath.get(path);
                     const overwrite = repeatedPath && (normalizedRule === 'allow');
                     if (overwrite || !repeatedPath) {
-                        allowByPath.set(path, normalizedRule);
+                        allowByPath.set(path, { rule: normalizedRule, line });
                     }
                 }
             }
 
             const accessibilityRules = [];
-            for (const [path, rule] of allowByPath.entries()) {
+            for (const [path, { rule, line }] of allowByPath.entries()) {
                 accessibilityRules.push({
                     pattern: makePathPattern(path),
-                    allow: rule !== 'disallow'
+                    allow: rule !== 'disallow',
+                    rule,
+                    path,
+                    line
                 });
             }
 
             accessibilityRules.sort(moreSpecificFirst);
 
-            for (const agent of group.agents) {
+            for (const { agent, line } of group.agents) {
                 groups.push({
                     pattern: makeUserAgentPattern(agent),
+                    agent,
+                    line,
                     accessibilityRules
                 });
             }
@@ -239,24 +259,31 @@
         function matchRule(rules, path) {
             for (const rule of rules) {
                 if (rule.pattern.test(path)) {
-                    return rule.allow;
+                    return rule;
                 }
             }
-            // no rule matched? assume true
-            return true;
+            return null;
+        }
+
+        // like isAllowed, but also says which group and rule decided it
+        function explain(userAgent, path) {
+            const group = findGroup(userAgent);
+            const rule = group ? matchRule(group.accessibilityRules, path) : null;
+            return {
+                // no group or rule matched? assume allowed
+                allowed: rule ? rule.allow : true,
+                group: group ? { agent: group.agent, line: group.line } : null,
+                rule: rule ? { rule: rule.rule, path: rule.path, line: rule.line } : null
+            };
         }
 
         function isAllowed(userAgent, path) {
-            const group = findGroup(userAgent);
-            if (group) {
-                return matchRule(group.accessibilityRules, path);
-            }
-            // no group matched? assume allowed
-            return true;
+            return explain(userAgent, path).allowed;
         }
 
         return {
-            isAllowed: isAllowed
+            isAllowed: isAllowed,
+            explain: explain
         };
     }
 

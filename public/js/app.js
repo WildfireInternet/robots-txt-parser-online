@@ -5,32 +5,45 @@ jQuery(function ($) {
         $rules = $('#rules'),
         $urls = $('#urls'),
         $ua = $('#ua'),
+        // rules editor parts
+        $gutter = $('#rules-gutter'),
+        $highlight = $('#rules-highlight'),
+        $lineCount = $('#line-count'),
         // get template for results
         template = $('#result-url').html(),
-        // container for any errors
-        $errors = $('#error-msg'),
-        // container for results
-        $results = $('#results');
+        // results and summaries
+        $results = $('#results'),
+        $blocked = $('#blocked-count'),
+        $allowed = $('#allowed-count'),
+        $matchedGroup = $('#matched-group');
 
     // escape user input before inserting it as html
     function escapeHtml(str) {
         return $('<div>').text(str).html().replace(/"/g, '&quot;');
     }
 
-    // check each url against the rules, returns an object of url => isAllowed
-    function check(rules, urls, ua) {
-        var results = {},
-            robots;
+    function capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
 
-        // fallback if no useragent given
-        if ( ! RobotsTxt.parse(rules).groups.length) {
-            rules = "User-agent: *\r\n" + rules;
+    function makeRobots(rules) {
+        var config = RobotsTxt.parse(rules);
+
+        // fallback if no useragent given, rules without a group are treated as `User-agent: *`
+        if ( ! config.groups.length) {
+            config = RobotsTxt.parse(rules, '*');
         }
 
-        robots = RobotsTxt.guard(RobotsTxt.parse(rules));
+        return RobotsTxt.guard(config);
+    }
+
+    // check each url against the rules, returns a list of { url, allowed, group, rule }
+    function check(robots, urls, ua) {
+        var results = [];
 
         // loop urls, checking if allowed
         urls.split(/\r?\n/).forEach(function (url) {
+            url = url.trim();
             if (url) {
                 var path = url;
                 // make sure path is correct, rules only match against the path (and query) of full urls
@@ -42,42 +55,138 @@ jQuery(function ($) {
                 } else if ( ! url.startsWith('/')) {
                     url = path = '/' + url;
                 }
-                results[url] = robots.isAllowed(ua, path);
+                results.push($.extend({ url: url }, robots.explain(ua, path)));
             }
         });
 
         return results;
     }
 
-    // on submit
-    $form.on('submit', function (e) {
+    // syntax highlight one line of robots.txt
+    function highlightLine(line) {
+        var hash = line.indexOf('#'),
+            code = hash === -1 ? line : line.slice(0, hash),
+            comment = hash === -1 ? '' : line.slice(hash),
+            colon = code.indexOf(':'),
+            html = escapeHtml(code);
 
-        var results = [];
-
-        e.preventDefault(); // prevent default submit action
-
-        // reset any previous errors and results
-        $errors.html('');
-        $results.html('');
-
-        // make sure all required data is entered
-        if ( ! $rules.val()) {
-            $errors.html("Please supply robots.txt rules");
-            return ;
+        if (colon !== -1) {
+            var field = code.slice(0, colon),
+                type = { 'user-agent': 'agent', 'disallow': 'disallow', 'allow': 'allow' }[field.trim().toLowerCase()];
+            html = (type ? '<span class="tok-' + type + '">' + escapeHtml(field) + '</span>' : escapeHtml(field))
+                + '<span class="tok-colon">:</span>'
+                + escapeHtml(code.slice(colon + 1));
         }
 
-        if ( ! $urls.val()) {
-            $errors.html("Please supply example urls");
-            return ;
+        if (comment) {
+            html += '<span class="tok-comment">' + escapeHtml(comment) + '</span>';
         }
 
-        // loop in results
-        $.each(check($rules.val(), $urls.val(), $ua.val() || '*'), function (url, isAllowed) {
-            var state = isAllowed ? 'allowed' : 'disallowed';
-            results.push(template.replace(/\{state\}/g, state).replace(/\{url\}/g, function () { return escapeHtml(url); }));
+        return html;
+    }
+
+    // redraw the rules editor's line numbers and highlighting, marking lines that matched a url
+    function renderEditor(hitLines) {
+        var lines = $rules.val().split(/\r?\n/),
+            gutter = [],
+            code = [];
+
+        lines.forEach(function (line, i) {
+            var cls = hitLines[i + 1] ? ' class="is-hit"' : '';
+            gutter.push('<div' + cls + '>' + (i + 1) + '</div>');
+            code.push('<div' + cls + '>' + highlightLine(line) + '</div>');
         });
 
-        // show results
-        $results.html(results.join(''));
+        $gutter.html(gutter.join(''));
+        $highlight.html(code.join(''));
+        $lineCount.text($rules.val() ? lines.length + (lines.length === 1 ? ' line' : ' lines') : '');
+
+        // grow to fit the rules so only the page scrolls vertically
+        var rules = $rules[0];
+        rules.style.height = 'auto';
+        rules.style.height = (rules.scrollHeight + rules.offsetHeight - rules.clientHeight) + 'px';
+        syncScroll();
+    }
+
+    function syncScroll() {
+        $highlight.css('transform', 'translateX(' + (-$rules[0].scrollLeft) + 'px)');
+    }
+
+    function describeRule(rule) {
+        return rule ? 'L' + rule.line + ' ' + capitalize(rule.rule) + ': ' + rule.path : 'no matching rule';
+    }
+
+    function describeGroup(group) {
+        if ( ! group) {
+            return 'No matching group, so everything is allowed';
+        }
+        return 'Matched group: <code>User-agent: ' + escapeHtml(group.agent) + '</code>'
+            + (group.line ? '' : ' (assumed)');
+    }
+
+    function showEmpty(message) {
+        $results.html('<li class="results-empty">' + message + '</li>');
+        $blocked.text('');
+        $allowed.text('');
+    }
+
+    // check everything and redraw, runs on every change
+    function update() {
+        var rules = $rules.val(),
+            urls = $urls.val(),
+            ua = $ua.val().trim() || '*',
+            hitLines = {},
+            blocked = 0,
+            html = [];
+
+        if ( ! rules.trim()) {
+            $matchedGroup.html('');
+            showEmpty('Add some robots.txt rules to see results.');
+            renderEditor(hitLines);
+            return;
+        }
+
+        var robots = makeRobots(rules),
+            results = check(robots, urls, ua);
+
+        // matched group only depends on the user-agent, so check it with any path
+        $matchedGroup.html(describeGroup(robots.explain(ua, '/').group));
+
+        results.forEach(function (result) {
+            var state = result.allowed ? 'allowed' : 'disallowed';
+            if (result.rule) {
+                hitLines[result.rule.line] = true;
+            }
+            if ( ! result.allowed) {
+                blocked++;
+            }
+            html.push(template
+                .replace(/\{state\}/g, state)
+                .replace(/\{label\}/g, capitalize(state))
+                .replace(/\{url\}/g, function () { return escapeHtml(result.url); })
+                .replace(/\{rule\}/g, function () { return escapeHtml(describeRule(result.rule)); }));
+        });
+
+        renderEditor(hitLines);
+
+        if ( ! results.length) {
+            showEmpty('Add some URLs to test.');
+            return;
+        }
+
+        $results.html(html.join(''));
+        $blocked.text(blocked + ' blocked');
+        $allowed.text((results.length - blocked) + ' allowed');
+    }
+
+    $form.on('input', update);
+    $rules.on('scroll', syncScroll);
+
+    // results update live, so there's nothing to submit (e.g. on enter in the user-agent field)
+    $form.on('submit', function (e) {
+        e.preventDefault();
     });
+
+    // browsers may restore previous values on back/refresh
+    update();
 });
